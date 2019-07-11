@@ -5,12 +5,13 @@ import (
 	"io"
 	"os"
 
+	"github.com/anz-bank/sysl/src/proto"
 	"github.com/golang/protobuf/jsonpb"
 	"github.com/golang/protobuf/proto"
 )
 
 // JSONPB ...
-func JSONPB(m proto.Message, filename string) error {
+func JSONPB(m *sysl.Module, filename string) error {
 	if m == nil {
 		return fmt.Errorf("module is nil: %#v", filename)
 	}
@@ -22,7 +23,7 @@ func JSONPB(m proto.Message, filename string) error {
 }
 
 // FJSONPB ...
-func FJSONPB(w io.Writer, m proto.Message) error {
+func FJSONPB(w io.Writer, m *sysl.Module) error {
 	if m == nil {
 		return fmt.Errorf("module is nil")
 	}
@@ -31,7 +32,7 @@ func FJSONPB(w io.Writer, m proto.Message) error {
 }
 
 // TextPB ...
-func TextPB(m proto.Message, filename string) error {
+func TextPB(m *sysl.Module, filename string) error {
 	if m == nil {
 		return fmt.Errorf("module is nil: %#v", filename)
 	}
@@ -45,7 +46,7 @@ func TextPB(m proto.Message, filename string) error {
 }
 
 // FTextPB ...
-func FTextPB(w io.Writer, m proto.Message) error {
+func FTextPB(w io.Writer, m *sysl.Module) error {
 	if m == nil {
 		return fmt.Errorf("module is nil")
 	}

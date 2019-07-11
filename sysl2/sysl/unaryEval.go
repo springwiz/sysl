@@ -1,13 +1,14 @@
 package main
 
 import (
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 	"github.com/pkg/errors"
 )
 
 type unaryFunc func(*sysl.Value) *sysl.Value
 
-//nolint:gochecknoglobals
+type unaryFuncMap map[sysl.Expr_UnExpr_Op]unaryFunc
+
 var unaryFunctions = map[sysl.Expr_UnExpr_Op]unaryFunc{
 	sysl.Expr_UnExpr_NEG: unaryNeg,
 }
@@ -20,7 +21,8 @@ func evalUnaryFunc(op sysl.Expr_UnExpr_Op, arg *sysl.Value) *sysl.Value {
 }
 
 func unaryNeg(arg *sysl.Value) *sysl.Value {
-	if x, ok := arg.Value.(*sysl.Value_I); ok {
+	switch x := arg.Value.(type) {
+	case *sysl.Value_I:
 		return MakeValueI64(-x.I)
 	}
 	panic(errors.Errorf("unaryNeg for %v not supported", arg.Value))

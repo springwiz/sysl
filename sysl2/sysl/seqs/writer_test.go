@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestWrite(t *testing.T) {
@@ -115,8 +114,7 @@ func TestWriteHead(t *testing.T) {
 	w := MakeSequenceDiagramWriter(true)
 
 	// when
-	_, err := w.WriteHead("head")
-	require.NoError(t, err)
+	w.WriteHead("head")
 
 	// then
 	assert.Equal(t, 5, w.head.Len())
@@ -244,10 +242,8 @@ func TestWriteIndent(t *testing.T) {
 func TestStringer(t *testing.T) {
 	// Given
 	w := MakeSequenceDiagramWriter(false)
-	_, err := w.WriteHead("head")
-	require.NoError(t, err)
-	_, err = w.WriteString("body\n")
-	require.NoError(t, err)
+	w.WriteHead("head")
+	_, err := w.WriteString("body\n")
 
 	// When
 	s := w.String()
@@ -271,10 +267,8 @@ func TestStringerEmpty(t *testing.T) {
 func TestStringerWithAutogen(t *testing.T) {
 	// Given
 	w := MakeSequenceDiagramWriter(true)
-	_, err := w.WriteHead("head")
-	require.NoError(t, err)
-	_, err = w.WriteString("body\n")
-	require.NoError(t, err)
+	w.WriteHead("head")
+	_, err := w.WriteString("body\n")
 
 	// When
 	s := w.String()
@@ -298,10 +292,8 @@ body
 func TestWriteTo(t *testing.T) {
 	// Given
 	w := MakeSequenceDiagramWriter(false, "properties 1")
-	_, err := w.WriteHead("head")
-	require.NoError(t, err)
-	_, err = w.WriteString("body\n")
-	require.NoError(t, err)
+	w.WriteHead("head")
+	w.WriteString("body\n")
 
 	// When
 	var b bytes.Buffer

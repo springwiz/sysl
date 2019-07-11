@@ -3,7 +3,7 @@ package seqs
 import (
 	"sort"
 
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 )
 
 type strSet map[string]struct{}

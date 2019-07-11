@@ -3,7 +3,7 @@ package seqs
 import (
 	"testing"
 
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 	"github.com/stretchr/testify/assert"
 )
 

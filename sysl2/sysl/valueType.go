@@ -1,7 +1,7 @@
 package main
 
 import (
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 	"github.com/pkg/errors"
 )
 
@@ -9,30 +9,29 @@ type valueType int
 
 // const definitions for various sysl.Value types
 const (
-	ValueNoArg valueType = -1
-	ValueBool  valueType = iota
-	ValueInt
-	ValueFloat
-	ValueString
-	ValueStringDecimal
-	ValueList
-	ValueMap
-	ValueSet
-	ValueNull
+	VALUE_NO_ARG valueType = -1
+	VALUE_BOOL   valueType = iota
+	VALUE_INT
+	VALUE_FLOAT
+	VALUE_STRING
+	VALUE_STRING_DECIMAL
+	VALUE_LIST
+	VALUE_MAP
+	VALUE_SET
+	VALUE_NULL
 )
 
-//nolint:gochecknoglobals
 var valueTypeNames = map[valueType]string{
-	ValueNoArg:         "ValueNoArg",
-	ValueBool:          "ValueBool",
-	ValueInt:           "ValueInt",
-	ValueFloat:         "ValueFloat",
-	ValueString:        "ValueString",
-	ValueStringDecimal: "ValueStringDecimal",
-	ValueList:          "ValueList",
-	ValueMap:           "ValueMap",
-	ValueSet:           "ValueSet",
-	ValueNull:          "ValueNull",
+	VALUE_NO_ARG:         "VALUE_NO_ARG",
+	VALUE_BOOL:           "VALUE_BOOL",
+	VALUE_INT:            "VALUE_INT",
+	VALUE_FLOAT:          "VALUE_FLOAT",
+	VALUE_STRING:         "VALUE_STRING",
+	VALUE_STRING_DECIMAL: "VALUE_STRING_DECIMAL",
+	VALUE_LIST:           "VALUE_LIST",
+	VALUE_MAP:            "VALUE_MAP",
+	VALUE_SET:            "VALUE_SET",
+	VALUE_NULL:           "VALUE_NULL",
 }
 
 func (v valueType) String() string {
@@ -41,27 +40,27 @@ func (v valueType) String() string {
 
 func getValueType(v *sysl.Value) valueType {
 	if v == nil {
-		return ValueNoArg
+		return VALUE_NO_ARG
 	}
 	switch v.Value.(type) {
 	case *sysl.Value_B:
-		return ValueBool
+		return VALUE_BOOL
 	case *sysl.Value_I:
-		return ValueInt
+		return VALUE_INT
 	case *sysl.Value_D:
-		return ValueFloat
+		return VALUE_FLOAT
 	case *sysl.Value_S:
-		return ValueString
+		return VALUE_STRING
 	case *sysl.Value_Decimal:
-		return ValueStringDecimal
+		return VALUE_STRING_DECIMAL
 	case *sysl.Value_Set:
-		return ValueSet
+		return VALUE_SET
 	case *sysl.Value_List_:
-		return ValueList
+		return VALUE_LIST
 	case *sysl.Value_Map_:
-		return ValueMap
+		return VALUE_MAP
 	case *sysl.Value_Null_:
-		return ValueNull
+		return VALUE_NULL
 	default:
 		panic(errors.Errorf("exprOp: getValueType: unhandled type: %v", v))
 	}
@@ -75,11 +74,11 @@ func getContainedType(container *sysl.Value) valueType {
 	case *sysl.Value_Set:
 		list = x.Set.Value
 	default:
-		return ValueNoArg
+		return VALUE_NO_ARG
 	}
 
 	if len(list) == 0 {
-		return ValueNoArg
+		return VALUE_NO_ARG
 	}
 	return getValueType(list[0])
 }

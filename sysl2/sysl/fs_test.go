@@ -81,7 +81,7 @@ type flappyFileSystem struct {
 }
 
 func (ffs flappyFileSystem) Open(name string) (http.File, error) {
-	ff := flappyFile(ffs)
+	ff := flappyFile{ffs.data, ffs.succeed}
 	return &ff, nil
 }
 

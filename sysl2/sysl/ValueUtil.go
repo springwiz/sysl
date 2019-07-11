@@ -1,7 +1,7 @@
 package main
 
 import (
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 )
 
 // Scope holds the value of the variables during the execution of a transform
@@ -79,6 +79,12 @@ func IsCollectionType(obj *sysl.Value) bool {
 // expects m.Value to be of type Value_Map
 func addItemToValueMap(m *sysl.Value, name string, val *sysl.Value) {
 	m.GetMap().Items[name] = val
+}
+
+func appendListToValueList(m *sysl.Value_List, val *sysl.Value_List) {
+	for _, v := range val.Value {
+		appendItemToValueList(m, v)
+	}
 }
 
 func appendItemToValueList(m *sysl.Value_List, val *sysl.Value) {
@@ -201,7 +207,8 @@ func typesToValueMap(types map[string]*sysl.Type) *sysl.Value {
 func unionToValueMap(types map[string]*sysl.Type) *sysl.Value {
 	m := MakeValueMap()
 	for key, t := range types {
-		if _, ok := t.Type.(*sysl.Type_OneOf_); ok {
+		switch t.Type.(type) {
+		case *sysl.Type_OneOf_:
 			addItemToValueMap(m, key, typeToValue(t))
 		}
 	}
@@ -243,20 +250,20 @@ func paramToValue(qp *sysl.Param) *sysl.Value {
 
 func stmtToValue(s *sysl.Statement) *sysl.Value {
 	m := MakeValueMap()
-	var stmtType string
+	var stmt_type string
 	switch x := s.Stmt.(type) {
 	case *sysl.Statement_Action:
-		stmtType = "action"
+		stmt_type = "action"
 		addItemToValueMap(m, "action", MakeValueString(x.Action.Action))
 	case *sysl.Statement_Call:
-		stmtType = "call"
+		stmt_type = "call"
 		addItemToValueMap(m, "endpoint", MakeValueString(x.Call.Endpoint))
 		addItemToValueMap(m, "target", MakeValueString(getAppName(x.Call.Target)))
 	case *sysl.Statement_Ret:
-		stmtType = "return"
+		stmt_type = "return"
 		addItemToValueMap(m, "payload", MakeValueString(x.Ret.Payload))
 	}
-	addItemToValueMap(m, "type", MakeValueString(stmtType))
+	addItemToValueMap(m, "type", MakeValueString(stmt_type))
 	return m
 }
 
@@ -274,14 +281,14 @@ func endpointToValue(e *sysl.Endpoint) *sysl.Value {
 		addItemToValueMap(m, "path", MakeValueString(e.RestParams.Path))
 
 		queryvars := MakeValueList()
-		for _, queryParam := range e.RestParams.QueryParam {
-			appendItemToValueList(queryvars.GetList(), queryParamsToValue(queryParam))
+		for _, query_param := range e.RestParams.QueryParam {
+			appendItemToValueList(queryvars.GetList(), queryParamsToValue(query_param))
 		}
 		addItemToValueMap(m, "queryvars", queryvars)
 
 		pathvars := MakeValueList()
-		for _, queryParam := range e.RestParams.UrlParam {
-			appendItemToValueList(pathvars.GetList(), queryParamsToValue(queryParam))
+		for _, query_param := range e.RestParams.UrlParam {
+			appendItemToValueList(pathvars.GetList(), queryParamsToValue(query_param))
 		}
 		addItemToValueMap(m, "pathvars", pathvars)
 	}

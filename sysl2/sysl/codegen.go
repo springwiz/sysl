@@ -7,7 +7,7 @@ import (
 	"os"
 	"sort"
 
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 	parser "github.com/anz-bank/sysl/sysl2/naive"
 	ebnfGrammar "github.com/anz-bank/sysl/sysl2/proto"
 	"github.com/pkg/errors"
@@ -17,7 +17,7 @@ import (
 // Node can be string or node
 type Node []interface{}
 
-type CodeGenOutput struct {
+type codeGenOutput struct {
 	filename string
 	output   Node
 }
@@ -72,6 +72,7 @@ func processChoice(g *ebnfGrammar.Grammar, obj *sysl.Value, choice *ebnfGrammar.
 					default:
 						logrus.Warnf("Expecting a collection type, got %T for rule %s", vv, x.Rulename.Name)
 						fullScan = false
+						break
 					}
 					ruleInstances := Node{}
 
@@ -193,20 +194,15 @@ func applyTranformToModel(modelName, transformAppName, viewName string, model, t
 }
 
 // Serialize serializes node to string
-func Serialize(w io.Writer, delim string, node Node) error {
+func Serialize(w io.Writer, delim string, node Node) {
 	for _, n := range node {
 		switch x := n.(type) {
 		case string:
-			if _, err := io.WriteString(w, x+delim); err != nil {
-				return err
-			}
+			io.WriteString(w, x+delim)
 		case Node:
-			if err := Serialize(w, delim, x); err != nil {
-				return err
-			}
+			Serialize(w, delim, x)
 		}
 	}
-	return nil
 }
 
 // return the one and only app defined in the module
@@ -230,11 +226,11 @@ func loadAndGetDefaultApp(root, model string) (*sysl.Module, string) {
 
 // GenerateCode transform input sysl model to code in the target language described by
 // grammar and a sysl transform
-func GenerateCode(rootModel, model, rootTransform, transform, grammar, start string) []*CodeGenOutput {
-	var codeOutput []*CodeGenOutput
+func GenerateCode(root_model, model, root_transform, transform, grammar, start string) []*codeGenOutput {
+	var codeOutput []*codeGenOutput
 
-	mod, modelAppName := loadAndGetDefaultApp(rootModel, model)
-	tx, transformAppName := loadAndGetDefaultApp(rootTransform, transform)
+	mod, modelAppName := loadAndGetDefaultApp(root_model, model)
+	tx, transformAppName := loadAndGetDefaultApp(root_transform, transform)
 	g := readGrammar(grammar, "gen", start)
 	if g == nil {
 		panic(errors.Errorf("Unable to load grammar"))
@@ -248,57 +244,50 @@ func GenerateCode(rootModel, model, rootTransform, transform, grammar, start str
 		filename := fileNames.GetMap().Items["filename"].GetS()
 		logrus.Println(filename)
 		r := processRule(g, result, g.Start)
-		codeOutput = append(codeOutput, &CodeGenOutput{filename, r})
+		codeOutput = append(codeOutput, &codeGenOutput{filename, r})
 	} else {
 		fileValues := fileNames.GetList().Value
 		for i, v := range result.GetList().Value {
 			filename := fileValues[i].GetMap().Items["filename"].GetS()
 			r := processRule(g, v, g.Start)
-			codeOutput = append(codeOutput, &CodeGenOutput{filename, r})
+			codeOutput = append(codeOutput, &codeGenOutput{filename, r})
 		}
 	}
 	return codeOutput
 }
 
-func outputToFiles(outDir string, output []*CodeGenOutput) error {
+func outputToFiles(outDir string, output []*codeGenOutput) {
 	for _, o := range output {
 		f, err := os.Create(outDir + "/" + o.filename)
-		if err != nil {
-			return err
+		if f == nil {
+			logrus.Errorf("Unable to open file: %s\nGot error:\n%s", f.Name(), err.Error())
+			continue
 		}
 		logrus.Warningln("Writing file: " + f.Name())
-		if err := Serialize(f, " ", o.output); err != nil {
-			return err
-		}
-		if err := f.Close(); err != nil {
-			return err
-		}
+		Serialize(f, " ", o.output)
+		f.Close()
 	}
-	return nil
 }
 
 // DoGenerateCode generate code for the given model, using transform
 // and the grammar of the target language
-// TODO: Remove nolint when code that uses stdout and stderr is added.
-//nolint:unparam
-func DoGenerateCode(stdout, sderr io.Writer, flags *flag.FlagSet, args []string) error {
-	rootModel := flags.String("root-model", ".", "sysl root directory for input model file (default: .)")
-	rootTransform := flags.String("root-transform", ".", "sysl root directory for input transform file (default: .)")
+func DoGenerateCode(stdout, stderr io.Writer, flags *flag.FlagSet, args []string) int {
+	root_model := flags.String("root-model", ".", "sysl root directory for input model file (default: .)")
+	root_transform := flags.String("root-transform", ".", "sysl root directory for input transform file (default: .)")
 	model := flags.String("model", ".", "model.sysl")
 	transform := flags.String("transform", ".", "transform.sysl")
 	grammar := flags.String("grammar", ".", "grammar.g")
 	start := flags.String("start", ".", "start rule for the grammar")
 	outDir := flags.String("outdir", ".", "output directory")
 
-	if err := flags.Parse(args[1:]); err != nil {
-		return err
-	}
-	logrus.Warnf("root-model: %s\n", *rootModel)
-	logrus.Warnf("root-transform: %s\n", *rootTransform)
+	flags.Parse(args[1:])
+	logrus.Warnf("root_model: %s\n", *root_model)
+	logrus.Warnf("root_transform: %s\n", *root_transform)
 	logrus.Warnf("model: %s\n", *model)
 	logrus.Warnf("transform: %s\n", *transform)
 	logrus.Warnf("grammar: %s\n", *grammar)
 	logrus.Warnf("start: %s\n", *start)
-	output := GenerateCode(*rootModel, *model, *rootTransform, *transform, *grammar, *start)
-	return outputToFiles(*outDir, output)
+	output := GenerateCode(*root_model, *model, *root_transform, *transform, *grammar, *start)
+	outputToFiles(*outDir, output)
+	return 0
 }

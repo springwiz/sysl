@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,7 +69,6 @@ func TestTransformBlackBoxes(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := TransformBlackBoxes(tt.args.blackboxes); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("TransformBlackBoxes() = %v, want %v", got, tt.want)
@@ -99,7 +98,6 @@ func TestParseBlackBoxesFromArgument(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := ParseBlackBoxesFromArgument(tt.args.blackboxFlags); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("ParseBlackBoxesFromArgument() = %v, want %v", got, tt.want)
@@ -164,7 +162,6 @@ func TestMergeAttributes(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			if got := MergeAttributes(tt.args.app, tt.args.edpnt); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MergeAttributes() = %v, want %v", got, tt.want)

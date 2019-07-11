@@ -28,11 +28,11 @@ func TestNestedGrammar(t *testing.T) {
 			case 0:
 				logrus.Println(tok.text)
 				nested.pushGrammar(tok.text)
-				tok.id = PushGrammar
+				tok.id = PUSH_GRAMMAR
 			case 1:
 				logrus.Println(tok.text)
 				nested.popGrammar()
-				tok.id = PopGrammar
+				tok.id = POP_GRAMMAR
 			}
 			p := nested.stack.top()
 			p.l.currentIndex = nested.getLexer().currentIndex

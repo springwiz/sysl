@@ -8,7 +8,7 @@ import (
 	"os"
 	"testing"
 
-	sysl "github.com/anz-bank/sysl/src/proto"
+	"github.com/anz-bank/sysl/src/proto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,23 +25,20 @@ func TestExit(t *testing.T) {
 	assert.Equal(t, 42, e.code)
 }
 
-//nolint:gochecknoglobals
-var (
-	testModule = &sysl.Module{
-		Apps: map[string]*sysl.Application{
-			"Test": {
-				Name: &sysl.AppName{
-					Part: []string{"Test"},
-				},
-				Endpoints: map[string]*sysl.Endpoint{
-					"GetInfo": {
-						Name: "GetInfo",
-						Stmt: []*sysl.Statement{
-							{
-								Stmt: &sysl.Statement_Action{
-									Action: &sysl.Action{
-										Action: "Do something",
-									},
+var testModule = &sysl.Module{
+	Apps: map[string]*sysl.Application{
+		"Test": &sysl.Application{
+			Name: &sysl.AppName{
+				Part: []string{"Test"},
+			},
+			Endpoints: map[string]*sysl.Endpoint{
+				"GetInfo": &sysl.Endpoint{
+					Name: "GetInfo",
+					Stmt: []*sysl.Statement{
+						{
+							Stmt: &sysl.Statement_Action{
+								Action: &sysl.Action{
+									Action: "Do something",
 								},
 							},
 						},
@@ -49,9 +46,10 @@ var (
 				},
 			},
 		},
-	}
+	},
+}
 
-	testModuleJSONPB = `{
+var testModuleJSONPB = `{
  "apps": {
   "Test": {
    "name": {
@@ -75,7 +73,7 @@ var (
  }
 }`
 
-	testModuleTextPB = `apps: <
+var testModuleTextPB = `apps: <
   key: "Test"
   value: <
     name: <
@@ -95,11 +93,10 @@ var (
   >
 >
 `
-)
 
 func TestJSONPB(t *testing.T) {
-	if filename := testTempFilename(t, "", "sysl-TestJSONPB-*.json"); filename != "" {
-		require.NoError(t, JSONPB(testModule, filename))
+	if filename := testTempFilename(t, "", "github.com-sysl-sysl2-sysl-sysl_test.go-TestJSONPB-*.json"); filename != "" {
+		JSONPB(testModule, filename)
 		output, err := ioutil.ReadFile(filename)
 		require.NoError(t, err)
 		assert.Equal(t, testModuleJSONPB, string(output))
@@ -107,30 +104,31 @@ func TestJSONPB(t *testing.T) {
 }
 
 func TestJSONPBNilModule(t *testing.T) {
-	if tf := newTestTempFile(t, "", "sysl-TestJSONPB-*.json"); tf != nil {
+	if tf := newTestTempFile(t, "", "github.com-sysl-sysl2-sysl-sysl_test.go-TestJSONPB-*.json"); tf != nil {
 		filename := tf.Name()
 		tf.CloseAndRemove()
-		require.Error(t, JSONPB(nil, filename))
-		_, err := os.Stat(filename)
+		err := JSONPB(nil, filename)
+		_, err = os.Stat(filename)
 		assert.True(t, os.IsNotExist(err))
 	}
 }
 
 func TestFJSONPB(t *testing.T) {
 	var output bytes.Buffer
-	require.NoError(t, FJSONPB(&output, testModule))
+	FJSONPB(&output, testModule)
 	assert.Equal(t, testModuleJSONPB, output.String())
 }
 
 func TestFJSONPBNilModule(t *testing.T) {
 	var output bytes.Buffer
-	require.Error(t, FJSONPB(&output, nil))
+	err := FJSONPB(&output, nil)
+	assert.Error(t, err)
 	assert.Equal(t, "", output.String())
 }
 
 func TestTextPB(t *testing.T) {
-	if filename := testTempFilename(t, "", "sysl-TestJSONPB-*.json"); filename != "" {
-		require.NoError(t, TextPB(testModule, filename))
+	if filename := testTempFilename(t, "", "github.com-sysl-sysl2-sysl-sysl_test.go-TestJSONPB-*.json"); filename != "" {
+		TextPB(testModule, filename)
 		output, err := ioutil.ReadFile(filename)
 		require.NoError(t, err)
 		assert.Equal(t, testModuleTextPB, string(output))
@@ -138,29 +136,31 @@ func TestTextPB(t *testing.T) {
 }
 
 func TestTextPBNilModule(t *testing.T) {
-	if tf := newTestTempFile(t, "", "sysl-TestTextPBNilModule-*.textpb"); tf != nil {
+	if tf := newTestTempFile(t, "", "github.com-sysl-sysl2-sysl-sysl_test.go-TestTextPBNilModule-*.textpb"); tf != nil {
 		filename := tf.Name()
 		tf.CloseAndRemove()
-		require.Error(t, TextPB(nil, filename))
-		_, err := os.Stat(filename)
+		err := TextPB(nil, filename)
+		assert.Error(t, err)
+		_, err = os.Stat(filename)
 		assert.True(t, os.IsNotExist(err))
 	}
 }
 
 func TestFTextPB(t *testing.T) {
 	var output bytes.Buffer
-	require.NoError(t, FTextPB(&output, testModule))
+	FTextPB(&output, testModule)
 	assert.Equal(t, testModuleTextPB, output.String())
 }
 
 func TestFTextPBNilModule(t *testing.T) {
 	var output bytes.Buffer
-	require.Error(t, FTextPB(&output, nil))
+	err := FTextPB(&output, nil)
+	assert.Error(t, err)
 	assert.Equal(t, "", output.String())
 }
 
 func testMain2(t *testing.T, args []string, golden string) {
-	if output := testTempFilename(t, "", "sysl-TestTextPBNilModule-*.textpb"); output != "" {
+	if output := testTempFilename(t, "", "github.com-sysl-sysl2-sysl-sysl_test.go-TestTextPBNilModule-*.textpb"); output != "" {
 		var stdout, stderr bytes.Buffer
 		rc := main2(&stdout, &stderr, append([]string{"sysl", "-o", output}, args...), main3)
 		if !assert.Zero(t, rc) {
